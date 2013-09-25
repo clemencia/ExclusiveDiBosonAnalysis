@@ -95,6 +95,8 @@ private:
 
 
   bool isMC;
+  std::vector<edm::InputTag> isoValInputTags;
+
   HLTConfigProvider hltConfig_;
 
   TH1F * h_pt_extra_track;
@@ -136,22 +138,28 @@ private:
   vector<double>* vertex_x;
   vector<double>* vertex_y;
   vector<double>* vertex_z;
-  vector<int>*    vertex_idx;
-  vector<int>*    vertex_ntracks;
-  vector<int>*    vertex_mumu_idx;
-  vector<int>*    vertex_ee_idx;
-  vector<int>*    vertex_emu_idx;
+  vector<int>*    vertex_idx; // so far unused
+  vector<int>*    vertex_extra_ntracks_ee;
+  vector<int>*    vertex_extra_ntracks_mumu;
+  vector<int>*    vertex_extra_ntracks_emu;
+  vector<int>*    vertex_mumu_cand1_idx;
+  vector<int>*    vertex_mumu_cand2_idx;
+  vector<int>*    vertex_ee_cand1_idx;
+  vector<int>*    vertex_ee_cand2_idx;
+  vector<int>*    vertex_emu_candE_idx;
+  vector<int>*    vertex_emu_candMu_idx;
+
 
   vector<int>* n_tracks_per_vtx;
-  vector<vector<double>* >* track_pt;
-  vector<vector<double>* >* track_eta;
-  vector<vector<double>* >* track_phi;
-  vector<vector<double>* >* track_E;
-  vector<vector<int>* >*    track_vtx_idx;
-  vector<vector<double>* >* track_px;
-  vector<vector<double>* >* track_py;
-  vector<vector<double>* >* track_pz;
-  vector<vector<double>* >* track_Q;
+  vector<vector<double> >* track_pt;
+  vector<vector<double> >* track_eta;
+  vector<vector<double> >* track_phi;
+  vector<vector<double> >* track_E;
+  vector<vector<int> >*    track_vtx_idx;
+  vector<vector<double> >* track_px;
+  vector<vector<double> >* track_py;
+  vector<vector<double> >* track_pz;
+  vector<vector<double> >* track_Q;
 
   int n_protons;
   vector<bool>*   proton_id;
@@ -170,7 +178,7 @@ private:
   double sqrtsgamgam;
 
   int n_genparticles;
-  vector<bool>*   genpart_pdgID;
+  vector<int>*   genpart_pdgID;
   vector<double>* genpart_pt;
   vector<double>* genpart_eta;
   vector<double>* genpart_phi;
