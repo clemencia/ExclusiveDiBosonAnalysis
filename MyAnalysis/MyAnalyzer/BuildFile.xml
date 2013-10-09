@@ -15,6 +15,6 @@
 <use name="DataFormats/HepMCCandidate"/>
 <use name="DataFormats/Candidate"/>
 <use name="HLTrigger/HLTcore"/>
-<use name="EGamma/EGammaAnalysisTools"/>
+<!--<use name="EGamma/EGammaAnalysisTools"/> --->
 <use name="DataFormats/METReco"/>
 <flags EDM_PLUGIN="1"/>
