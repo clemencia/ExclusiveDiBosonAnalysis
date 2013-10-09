@@ -702,7 +702,7 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
  	       if(pass_muon_assoc && pass_muon2_assoc){
 		 count_Nvertices_match_mumu++;
  		 //veto_event=true;		 
- 		 nextra_tracks_mumu = vertex_ntracks-2;
+ 		 nextra_tracks_mumu = vertexNtracks-2;
  		 (*vertex_extra_ntracks_mumu).push_back(nextra_tracks_mumu);
  		 (*vertex_mumu_cand1_idx).push_back(l);
  		 (*vertex_mumu_cand2_idx).push_back(k);
