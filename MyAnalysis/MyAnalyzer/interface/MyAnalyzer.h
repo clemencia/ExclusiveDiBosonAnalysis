@@ -47,7 +47,7 @@
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "FWCore/Common/interface/TriggerNames.h"
-#include "EGamma/EGammaAnalysisTools/interface/EGammaCutBasedEleId.h"
+#include "EgammaAnalysis/ElectronTools/interface/EGammaCutBasedEleId.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "DataFormats/EgammaCandidates/interface/Conversion.h"
 #include "DataFormats/RecoCandidate/interface/IsoDeposit.h"
