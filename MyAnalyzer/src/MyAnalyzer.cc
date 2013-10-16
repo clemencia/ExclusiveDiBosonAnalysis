@@ -310,8 +310,7 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    ////////////////////////////////////////////////////////////////////////////////
 
    Handle< edm::View<reco::PFMET> > metHandle;
-   // iEvent.getByLabel("pfType1CorrectedMet",metHandle);
-   iEvent.getByLabel("pfMetT0pcT1Txy",metHandle);
+   iEvent.getByLabel("pfType1CorrectedMet",metHandle);
    edm::View<reco::PFMET> mets = *metHandle;
 
    //edm::View<reco::PFMET>::const_iterator iMet;
