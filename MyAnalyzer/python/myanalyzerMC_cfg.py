@@ -48,7 +48,7 @@ process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
 
 process.GlobalTag.globaltag = 'START53_V7F::All'
 
-process.load("MyAnalysis.MyAnalyzer.myanalyzerMC_cfi")
+process.load("MyAnalyzer.myanalyzerMC_cfi")
 
 
 process.p = cms.Path(process.kt6PFJetsForIsolation * process.pfiso * process.producePFMETCorrections * process.demo)

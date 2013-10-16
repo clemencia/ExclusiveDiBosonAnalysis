@@ -57,7 +57,7 @@ process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag(
     cms.InputTag('pfJetMETcorr', 'type1')
     )
 
-process.load("MyAnalysis.MyAnalyzer.myanalyzerMC_cfi")
+process.load("MyAnalyzer.myanalyzerMC_cfi")
 
 process.p = cms.Path(process.kt6PFJetsForIsolation * process.pfiso *
                      ## for pileup met correction ##

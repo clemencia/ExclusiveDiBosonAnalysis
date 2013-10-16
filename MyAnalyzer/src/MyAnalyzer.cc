@@ -1,4 +1,4 @@
-#include"MyAnalysis/MyAnalyzer/interface/MyAnalyzer.h"
+#include"MyAnalyzer/interface/MyAnalyzer.h"
 
 //
 // constructors and destructor

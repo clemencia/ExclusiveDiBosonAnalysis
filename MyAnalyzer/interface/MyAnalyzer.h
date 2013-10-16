@@ -4,7 +4,7 @@
 // Class:      MyAnalyzer
 //
 /*
-*\class MyAnalyzer MyAnalyzer.cc MyAnalysis/MyAnalyzer/src/MyAnalyzer.cc
+*\class MyAnalyzer MyAnalyzer.cc MyAnalyzer/src/MyAnalyzer.cc
     Description: [one line class summary]
  Implementation: [Notes on implementation] 
                                                                              */
