@@ -57,29 +57,19 @@ process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag(
     cms.InputTag('pfJetMETcorr', 'type1')
     )
 
+process.load("JetMETCorrections.Type1MET.pfMETsysShiftCorrections_cfi")
 
-##____________________________________________________________________________||
-process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType1Type2_cff")
+# use for 2012 Data
+#process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_data
 
-process.corrPfMetType1.jetCorrLabel = cms.string("ak5PFL1FastL2L3")
-# for data
-# process.corrPfMetType1.jetCorrLabel = cms.string("ak5PFL1FastL2L3Residual")
+# use for Summer'12 MC ## for that I'd need 5_3_12_patch3
+#process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_mc
+process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorrParameters_2012runAvsNvtx_mc
 
-##____________________________________________________________________________||
-process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType0PFCandidate_cff")
-
-##____________________________________________________________________________||
-##process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType0RecoTrack_cff")
-
-##____________________________________________________________________________||
-process.load("JetMETCorrections.Type1MET.correctionTermsPfMetShiftXY_cff")
-
-process.corrPfMetShiftXY.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_mc
-# for data
-# process.corrPfMetShiftXY.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_data
-
-##____________________________________________________________________________||
-process.load("JetMETCorrections.Type1MET.correctedMet_cff")
+process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag(
+    cms.InputTag('pfJetMETcorr', 'type1') ,
+    cms.InputTag('pfMEtSysShiftCorr')  
+)
 
 
 process.load("ExclusiveDiBosonAnalysis.MyAnalyzer.myanalyzerMC_cfi")
@@ -88,11 +78,6 @@ process.p = cms.Path(process.kt6PFJetsForIsolation * process.pfiso *
                      ## for pileup met correction ##
                      process.type0PFMEtCorrection *
                      ## for JES met correction    ##
+                     process.pfMEtSysShiftCorrSequence *
                      process.producePFMETCorrections *
-                     process.correctionTermsPfMetType1Type2 +
-                     ## process.correctionTermsPfMetType0RecoTrack +
-                     process.correctionTermsPfMetType0PFCandidate +
-                     process.correctionTermsPfMetShiftXY +
-                     ## process.correctionTermsCaloMet +
-                     process.pfMetT0pcT1Txy +
                      process.demo)
