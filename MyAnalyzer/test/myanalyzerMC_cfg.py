@@ -49,13 +49,38 @@ process.load("Configuration.StandardSequences.MagneticField_cff")
 #### type 1 PFMET corrections
 process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
 
-#### type0 PFMET corrections needed?? makes no difference in the MET on the ntuple!!!
+#### type0 PFMET corrections needed?? makes no difference in the MET on the ntuple!!!???
 process.load("JetMETCorrections.Type1MET.pfMETCorrectionType0_cfi")
 process.pfType1CorrectedMet.applyType0Corrections = cms.bool(False) #why false? isn't it by default?
 process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag(
     cms.InputTag('pfMETcorrType0'),
     cms.InputTag('pfJetMETcorr', 'type1')
     )
+
+
+##____________________________________________________________________________||
+process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType1Type2_cff")
+
+process.corrPfMetType1.jetCorrLabel = cms.string("ak5PFL1FastL2L3")
+# for data
+# process.corrPfMetType1.jetCorrLabel = cms.string("ak5PFL1FastL2L3Residual")
+
+##____________________________________________________________________________||
+process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType0PFCandidate_cff")
+
+##____________________________________________________________________________||
+##process.load("JetMETCorrections.Type1MET.correctionTermsPfMetType0RecoTrack_cff")
+
+##____________________________________________________________________________||
+process.load("JetMETCorrections.Type1MET.correctionTermsPfMetShiftXY_cff")
+
+process.corrPfMetShiftXY.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_mc
+# for data
+# process.corrPfMetShiftXY.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_data
+
+##____________________________________________________________________________||
+process.load("JetMETCorrections.Type1MET.correctedMet_cff")
+
 
 process.load("ExclusiveDiBosonAnalysis.MyAnalyzer.myanalyzerMC_cfi")
 
@@ -64,4 +89,10 @@ process.p = cms.Path(process.kt6PFJetsForIsolation * process.pfiso *
                      process.type0PFMEtCorrection *
                      ## for JES met correction    ##
                      process.producePFMETCorrections *
+                     process.correctionTermsPfMetType1Type2 +
+                     ## process.correctionTermsPfMetType0RecoTrack +
+                     process.correctionTermsPfMetType0PFCandidate +
+                     process.correctionTermsPfMetShiftXY +
+                     ## process.correctionTermsCaloMet +
+                     process.pfMetT0pcT1Txy +
                      process.demo)
