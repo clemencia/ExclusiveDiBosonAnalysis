@@ -1,4 +1,4 @@
-#include"MyAnalyzer/interface/MyAnalyzer.h"
+#include"ExclusiveDiBosonAnalysis/MyAnalyzer/interface/MyAnalyzer.h"
 
 //
 // constructors and destructor
