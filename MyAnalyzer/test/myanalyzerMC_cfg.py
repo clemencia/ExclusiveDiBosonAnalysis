@@ -52,21 +52,23 @@ process.load("JetMETCorrections.Type1MET.pfMETCorrections_cff")
 #### type0 PFMET corrections needed?? makes no difference in the MET on the ntuple!!!???
 process.load("JetMETCorrections.Type1MET.pfMETCorrectionType0_cfi")
 process.pfType1CorrectedMet.applyType0Corrections = cms.bool(False) #why false? isn't it by default?
-process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag(
-    cms.InputTag('pfMETcorrType0'),
-    cms.InputTag('pfJetMETcorr', 'type1')
-    )
+# process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag(
+#    cms.InputTag('pfMETcorrType0'),
+#    cms.InputTag('pfJetMETcorr', 'type1')
+#    )
 
 process.load("JetMETCorrections.Type1MET.pfMETsysShiftCorrections_cfi")
-
-# use for 2012 Data
-#process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_data
-
-# use for Summer'12 MC ## for that I'd need 5_3_12_patch3
-#process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_mc
 process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorrParameters_2012runAvsNvtx_mc
 
+## for these I'd need 5_3_12_patch3
+# use for 2012 Data
+# process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_data
+## use for Summer'12 MC 
+# process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_mc
+
+
 process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag(
+    cms.InputTag('pfMETcorrType0'),
     cms.InputTag('pfJetMETcorr', 'type1') ,
     cms.InputTag('pfMEtSysShiftCorr')  
 )
@@ -77,7 +79,8 @@ process.load("ExclusiveDiBosonAnalysis.MyAnalyzer.myanalyzerMC_cfi")
 process.p = cms.Path(process.kt6PFJetsForIsolation * process.pfiso *
                      ## for pileup met correction ##
                      process.type0PFMEtCorrection *
-                     ## for JES met correction    ##
+                     ## for XY Shift met correction    ##
                      process.pfMEtSysShiftCorrSequence *
+                     ## for JES met correction    ##
                      process.producePFMETCorrections *
                      process.demo)
