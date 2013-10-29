@@ -503,8 +503,8 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	 muonTrackEta.push_back(-999.);
 	 muonTrackPhi.push_back(-999.);	 
 	 cout<<"There is something wrong with the Muon track"<<endl;
-	 cout<< "pass_d0cut " << passd0cut 
-	     << "pass_dzcut " << passdzcut
+	 cout<< "pass_d0cut " << pass_d0cut 
+	     << "pass_dzcut " << pass_dzcut
 	     << "pass_NtrackerLayers "<< pass_NtrackerLayers
 	     << "pass_NPxlHits "<< pass_NPxlHits
 	     <<	"pass_MuonStations " << pass_MuonStations
@@ -758,8 +758,8 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
  	       if(pass_muon_assoc && pass_electron_assoc){
 		 count_Nvertices_match_emu++;
  		 //veto_event=true;		 
- 		 nextra_tracks_emu = vertexNtracks-2;
- 		 (*vertex_extra_ntracks_emu).push_back(nextra_tracks_emu);
+ 		 nextra_tracks = vertexNtracks-2;
+ 		 (*vertex_extra_ntracks_emu).push_back(nextra_tracks);
  		 (*vertex_emu_candMu_idx).push_back(l);
  		 (*vertex_emu_candE_idx).push_back(k);
  		 //		 cout<<"This event passes mu+ mu- criteria and should be vetoed"<<endl;
