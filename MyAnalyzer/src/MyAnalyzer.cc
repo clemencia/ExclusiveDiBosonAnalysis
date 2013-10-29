@@ -642,6 +642,8 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		 if( fabs((*vertex_Tracks)->pt()-electronTrackPt[l])<0.001 && 
 		     fabs((*vertex_Tracks)->eta()-electronTrackEta[l])<0.001 && 
 		     fabs((*vertex_Tracks)->phi()-electronTrackPhi[l])<0.001){
+		   if (pass_electron_assoc)
+		     cout<<"this is weird, this electron already had a track associated to it"<<endl;
 		   pass_electron_assoc = true;
 		   continue; // go to next TRACK
 		   //// I do this just in case, I don't want to associate the same track to diff leptons
@@ -650,6 +652,8 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		 if( fabs((*vertex_Tracks)->pt()-electronTrackPt[k])<0.001 && 
 		     fabs((*vertex_Tracks)->eta()-electronTrackEta[k])<0.001 && 
 		     fabs((*vertex_Tracks)->phi()-electronTrackPhi[k])<0.001){
+		   if (pass_electron2_assoc)
+		     cout<<"this is weird, the electron already had an associated track"<<endl;
 		   pass_electron2_assoc = true;
 		   continue; // go to next TRACK
 		   
@@ -714,7 +718,46 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
  	 }//end loop muon2
 
 
+ 	 for(int l = 0;l<n_MuonsPassingCuts;l++){
+ 	   for(int k = 0;k<n_ElsPassingCuts;k++){
+	     
+ 	     if((muonCharge[l]*electronCharge[k])<0){
+	       //	     if(vertex_ntracks<=17){	     if(vertex_ntracks<=75){
+	       
+ 	       bool pass_muon_assoc = false;
+	       bool pass_electron_assoc = false;
+ 	       for(reco::Vertex::trackRef_iterator vertex_Tracks = vertex_i->tracks_begin();vertex_Tracks<vertex_i->tracks_end(); vertex_Tracks++){
+		 if( fabs((*vertex_Tracks)->pt()-muonTrackPt[l])<0.001 && 
+ 		     fabs((*vertex_Tracks)->eta()-muonTrackEta[l])<0.001 && 
+ 		     fabs((*vertex_Tracks)->phi()-muonTrackPhi[l])<0.001){
+ 		   pass_muon_assoc = true;
+		   /// can I do this? // muon_vtx_idx->push_back(??);
+		   continue; // go to next TRACK
+		   //// I do this just in case, I don't want to associate the same track to diff leptons
 
+ 		 }
+		 
+ 		 if( fabs((*vertex_Tracks)->pt()-electronTrackPt[k])<0.001 && 
+		     fabs((*vertex_Tracks)->eta()-electronTrackEta[k])<0.001 && 
+ 		     fabs((*vertex_Tracks)->phi()-electronTrackPhi[k])<0.001){
+ 		   pass_electron_assoc = true;
+		   continue; // go to next TRACK
+ 		 }
+ 	       }//Loop over tracks to see if the leptons are there
+	       
+ 	       if(pass_muon_assoc && pass_electron_assoc){
+		 count_Nvertices_match_emu++;
+ 		 //veto_event=true;		 
+ 		 nextra_tracks_emu = vertexNtracks-2;
+ 		 (*vertex_extra_ntracks_emu).push_back(nextra_tracks_emu);
+ 		 (*vertex_emu_candMu_idx).push_back(l);
+ 		 (*vertex_emu_candE_idx).push_back(k);
+ 		 //		 cout<<"This event passes mu+ mu- criteria and should be vetoed"<<endl;
+ 	       }
+	       
+ 	     }//end of if statement for charge
+ 	   }//end loop electron
+	 }//end loop muon
        }//end of vertex Ntracks<75 requirementa
      }//end vertex z
    }// end of loop over vertices
@@ -727,6 +770,12 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    }
    if(count_Nvertices_match_ee+count_Nvertices_match_mumu>1){
      cout<<"More than one matching same flavour ll pair vertex in the event"<<endl;
+   }
+   if(count_Nvertices_match_emu>1){
+     cout<<"More than one matching emu pair vertex in the event"<<endl;
+   }
+   if(count_Nvertices_match_emu+count_Nvertices_match_ee+count_Nvertices_match_mumu>1){
+     cout<<"More than one matching pair vertex of any kind in the event"<<endl;
    }
 
           
