@@ -503,6 +503,16 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	 muonTrackEta.push_back(-999.);
 	 muonTrackPhi.push_back(-999.);	 
 	 cout<<"There is something wrong with the Muon track"<<endl;
+	 cout<< "pass_d0cut " << passd0cut 
+	     << "pass_dzcut " << passdzcut
+	     << "pass_NtrackerLayers "<< pass_NtrackerLayers
+	     << "pass_NPxlHits "<< pass_NPxlHits
+	     <<	"pass_MuonStations " << pass_MuonStations
+	     << "pass_MuonChamberHits " << pass_MuonChamberHits
+	     << "pass_chi2 "<< pass_chi2 
+	     << "pass_pfMuon "<< pass_pfMuon
+	     << "pass_globalMuon "<< pass_globalMuon
+	     << endl;
        }
        muonCharge.push_back(iMuon->charge());
        n_MuonsPassingCuts++;
