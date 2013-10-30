@@ -502,16 +502,16 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	 muonTrackPt.push_back(-999.);
 	 muonTrackEta.push_back(-999.);
 	 muonTrackPhi.push_back(-999.);	 
-	 cout<<"There is something wrong with the Muon track"<<endl;
+	 cout<<"The Muon track didn't pass some cut"<<endl;
 	 cout<< "pass_d0cut " << pass_d0cut 
-	     << "pass_dzcut " << pass_dzcut
-	     << "pass_NtrackerLayers "<< pass_NtrackerLayers
-	     << "pass_NPxlHits "<< pass_NPxlHits
-	     <<	"pass_MuonStations " << pass_MuonStations
-	     << "pass_MuonChamberHits " << pass_MuonChamberHits
-	     << "pass_chi2 "<< pass_chi2 
-	     << "pass_pfMuon "<< pass_pfMuon
-	     << "pass_globalMuon "<< pass_globalMuon
+	     << ", pass_dzcut " << pass_dzcut
+	     << ", pass_NtrackerLayers "<< pass_NtrackerLayers
+	     << ", pass_NPxlHits "<< pass_NPxlHits
+	     <<	", pass_MuonStations " << pass_MuonStations
+	     << ", pass_MuonChamberHits " << pass_MuonChamberHits
+	     << ", pass_chi2 "<< pass_chi2 
+	     << ", pass_pfMuon "<< pass_pfMuon
+	     << ", pass_globalMuon "<< pass_globalMuon
 	     << endl;
        }
        muonCharge.push_back(iMuon->charge());
@@ -624,7 +624,8 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	   electronTrackPt.push_back(-9999.);
 	   electronTrackEta.push_back(-9999.);
 	   electronTrackPhi.push_back(-9999.);
-	 }
+       cout<<"The electron track didn't pass some 'closest ctf track ref'"<<endl;	
+	   }
 
        }//end of requiring not a duplicate (this is for FAST SIM)
      }//end of pt and eta requirements
@@ -773,19 +774,19 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    }// end of loop over vertices
 
    if(count_Nvertices_match_ee>1){
-     cout<<"More than one matching ee pair vertex in the event"<<endl;
+     cout<<"More than one matching ee pair vertex in the event iEvt: "<<iEvt<<endl;
    }
    if(count_Nvertices_match_mumu>1){
-     cout<<"More than one matching mumu pair vertex in the event"<<endl;
+     cout<<"More than one matching mumu pair vertex in the event iEvt: "<<iEvt<<endl;
    }
    if(count_Nvertices_match_ee+count_Nvertices_match_mumu>1){
-     cout<<"More than one matching same flavour ll pair vertex in the event"<<endl;
+     cout<<"More than one matching same flavour ll pair vertex in the event iEvt: "<<iEvt<<endl;
    }
    if(count_Nvertices_match_emu>1){
-     cout<<"More than one matching emu pair vertex in the event"<<endl;
+     cout<<"More than one matching emu pair vertex in the event iEvt: "<<iEvt<<endl;
    }
    if(count_Nvertices_match_emu+count_Nvertices_match_ee+count_Nvertices_match_mumu>1){
-     cout<<"More than one matching pair vertex of any kind in the event"<<endl;
+     cout<<"More than one matching pair vertex of any kind in the event iEvt: "<<iEvt<<endl;
    }
 
           
