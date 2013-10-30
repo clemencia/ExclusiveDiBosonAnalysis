@@ -1,4 +1,5 @@
 // -*- C++ -*-
+// -*- C++ -*-
 //
 // Package:    MyAnalyzer
 // Class:      MyAnalyzer
@@ -179,6 +180,7 @@ private:
 
   int n_genparticles;
   vector<int>*   genpart_pdgID;
+  vector<int>*   genpart_status;
   vector<double>* genpart_pt;
   vector<double>* genpart_eta;
   vector<double>* genpart_phi;
