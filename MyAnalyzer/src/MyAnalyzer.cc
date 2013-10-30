@@ -73,6 +73,7 @@ MyAnalyzer::MyAnalyzer(const edm::ParameterSet& iConfig)
   proton_et        = new vector<double>;
 
   genpart_pdgID    = new vector<int>;
+  genpart_status   = new vector<int>;
   genpart_pt       = new vector<double>;
   genpart_eta      = new vector<double>;
   genpart_phi      = new vector<double>;
@@ -175,6 +176,7 @@ MyAnalyzer::MyAnalyzer(const edm::ParameterSet& iConfig)
 
   newtree->Branch("n_genparticles",&n_genparticles,"n_genparticles/i");
   newtree->Branch("genpart_pdgID",&genpart_pdgID);
+  newtree->Branch("genpart_status",&genpart_status);
   newtree->Branch("genpart_pt",&genpart_pt);
   newtree->Branch("genpart_eta",&genpart_eta);
   newtree->Branch("genpart_phi",&genpart_phi);
@@ -265,6 +267,7 @@ MyAnalyzer::~MyAnalyzer()
   delete proton_et        ;
 
   delete genpart_pdgID    ;
+  delete genpart_status   ;
   delete genpart_pt       ;
   delete genpart_eta      ;
   delete genpart_phi      ;
@@ -303,6 +306,83 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    int nextra_tracks_mumu = -999;
    int nextra_tracks_ee = -999;
 
+   ///////////	clear vectors
+  muon_id      ->clear();
+  muon_pt      ->clear();
+  muon_E       ->clear();
+  muon_vtx_idx ->clear();
+  muon_px      ->clear();
+  muon_py      ->clear();
+  muon_pz      ->clear();
+  muon_Q       ->clear();
+  muon_et      ->clear();
+  muon_eta     ->clear();
+  muon_phi     ->clear();
+
+  electron_id    ->clear();
+  electron_pt    ->clear();
+  electron_eta   ->clear();
+  electron_phi   ->clear();
+  electron_E     ->clear();
+  electron_vtx_idx ->clear();
+  electron_px    ->clear();
+  electron_py    ->clear();
+  electron_pz    ->clear();
+  electron_Q     ->clear();
+  electron_et    ->clear();
+
+  vertex_x      ->clear();
+  vertex_y      ->clear();
+  vertex_z      ->clear();
+  vertex_idx    ->clear(); //so far unused
+  vertex_extra_ntracks_ee->clear();
+  vertex_extra_ntracks_mumu->clear();
+  vertex_extra_ntracks_emu->clear();
+  vertex_mumu_cand1_idx ->clear();
+  vertex_mumu_cand2_idx ->clear();
+  vertex_ee_cand1_idx ->clear();
+  vertex_ee_cand2_idx ->clear();
+  vertex_emu_candE_idx ->clear();
+  vertex_emu_candMu_idx->clear();
+
+  n_tracks_per_vtx->clear();
+  track_pt      ->clear();
+  track_eta     ->clear();
+  track_phi     ->clear();
+  track_E       ->clear();
+  track_vtx_idx ->clear();
+  track_px      ->clear();
+  track_py      ->clear();
+  track_pz      ->clear();
+  track_Q       ->clear();
+
+  proton_id      ->clear();
+  proton_pt      ->clear();
+  proton_eta     ->clear();
+  proton_phi     ->clear();
+  proton_E       ->clear();
+  proton_vtx_idx ->clear();
+  proton_px      ->clear();
+  proton_py      ->clear();
+  proton_pz      ->clear();
+  proton_Q       ->clear();
+  proton_et      ->clear();
+
+  genpart_pdgID  ->clear();
+  genpart_status ->clear();
+  genpart_pt     ->clear();
+  genpart_eta    ->clear();
+  genpart_phi    ->clear();
+  genpart_E      ->clear();
+  genpart_px     ->clear();
+  genpart_py     ->clear();
+  genpart_pz     ->clear();
+  genpart_Q      ->clear();
+  genpart_et     ->clear();
+
+  trigger_ps     ->clear();
+  trigger_name   ->clear();
+  trigger_decision ->clear();
 
  
    ////////////////////////////////////////////////////////////////////////////////
@@ -387,7 +467,8 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	 (*genpart_Q).push_back(mcIter->charge());
 	 (*genpart_eta).push_back(mcIter->eta());
 	 (*genpart_phi).push_back(mcIter->phi());
-	 (*genpart_pdgID).push_back(mcIter->pdgId());
+	 (*genpart_pdgID).push_back(mcIter->pdgId()); 
+	 (*genpart_status).push_back(mcIter->status());
        }	   
      }//end of looking at gen particles
    }//end of specifying that it needs to be MC
