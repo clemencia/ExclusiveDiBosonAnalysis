@@ -902,34 +902,34 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   if(count_Nvertices_match_ee>1){
     cout<<"More than one matching ee pair vertex in the event iEvt: "<<iEvt<<endl;
-    cout<<"Size saved vertex "<<vertex_extra_ntracks_ee->size();
-    cout<<"Nextra tracks "<<vertex_extra_ntracks_ee->at(0);
+    cout<<"Size saved vertex "<<vertex_extra_ntracks_ee->size()<<endl;
+    cout<<"Nextra tracks "<<vertex_extra_ntracks_ee->at(0)<<endl;
   }
   if(count_Nvertices_match_mumu>1){
     cout<<"More than one matching mumu pair vertex in the event iEvt: "<<iEvt<<endl;
-    cout<<"Size saved vertex "<<vertex_extra_ntracks_mumu->size();
-    cout<<"Nextra tracks "<<vertex_extra_ntracks_mumu->at(0);
+    cout<<"Size saved vertex "<<vertex_extra_ntracks_mumu->size()<<endl;
+    cout<<"Nextra tracks "<<vertex_extra_ntracks_mumu->at(0)<<endl;
   }
   if(count_Nvertices_match_ee+count_Nvertices_match_mumu>1){
     cout<<"More than one matching same flavour ll pair vertex in the event iEvt: "<<iEvt<<endl;
-    cout<<"Size saved vertex ee"<<vertex_extra_ntracks_ee->size();
-    if (vertex_extra_ntracks_ee->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_ee->at(0);
-    cout<<"Size saved vertex mumu"<<vertex_extra_ntracks_mumu->size();
-    if (vertex_extra_ntracks_mumu->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_mumu->at(0);
+    cout<<"Size saved vertex ee"<<vertex_extra_ntracks_ee->size()<<endl;
+    if (vertex_extra_ntracks_ee->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_ee->at(0)<<endl;
+    cout<<"Size saved vertex mumu"<<vertex_extra_ntracks_mumu->size()<<endl;
+    if (vertex_extra_ntracks_mumu->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_mumu->at(0)<<endl;
   }
   if(count_Nvertices_match_emu>1){
     cout<<"More than one matching emu pair vertex in the event iEvt: "<<iEvt<<endl;
-    cout<<"Size saved vertex "<<vertex_extra_ntracks_emu->size();
-    cout<<"Nextra tracks "<<vertex_extra_ntracks_emu->at(0);
+    cout<<"Size saved vertex "<<vertex_extra_ntracks_emu->size()<<endl;
+    cout<<"Nextra tracks "<<vertex_extra_ntracks_emu->at(0)<<endl;
   }
   if(count_Nvertices_match_emu+count_Nvertices_match_ee+count_Nvertices_match_mumu>1){
     cout<<"More than one matching pair vertex of any kind in the event iEvt: "<<iEvt<<endl;
-    cout<<"Size saved vertex ee"<<vertex_extra_ntracks_ee->size();
-    if (vertex_extra_ntracks_ee->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_ee->at(0);
-    cout<<"Size saved vertex mumu"<<vertex_extra_ntracks_mumu->size();
-    if (vertex_extra_ntracks_mumu->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_mumu->at(0);
-    cout<<"Size saved vertex emu"<<vertex_extra_ntracks_emu->size();
-    if (vertex_extra_ntracks_emu->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_emu->at(0);
+    cout<<"Size saved vertex ee"<<vertex_extra_ntracks_ee->size()<<endl;
+    if (vertex_extra_ntracks_ee->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_ee->at(0)<<endl;
+    cout<<"Size saved vertex mumu"<<vertex_extra_ntracks_mumu->size()<<endl;
+    if (vertex_extra_ntracks_mumu->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_mumu->at(0)<<endl;
+    cout<<"Size saved vertex emu"<<vertex_extra_ntracks_emu->size()<<endl;
+    if (vertex_extra_ntracks_emu->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_emu->at(0)<<endl;
   }
 
           
