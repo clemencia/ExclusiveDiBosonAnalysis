@@ -10,7 +10,7 @@ MyAnalyzer::MyAnalyzer(const edm::ParameterSet& iConfig)
   isMC = iConfig.getParameter<bool>("ismc"); 
   isoValInputTags = iConfig.getParameter<std::vector<edm::InputTag> >("isoValInputTags");
 
-   //now do what ever initialization is needed
+  //now do what ever initialization is needed
   muon_id        = new vector<bool>;
   muon_pt        = new vector<double>;
   muon_E         = new vector<double>;
@@ -48,6 +48,12 @@ MyAnalyzer::MyAnalyzer(const edm::ParameterSet& iConfig)
   vertex_ee_cand2_idx   = new vector<int>;
   vertex_emu_candE_idx   = new vector<int>;
   vertex_emu_candMu_idx  = new vector<int>;
+  vertex_ee_pair_pt    = new vector<double>;
+  vertex_mumu_pair_pt  = new vector<double>;
+  vertex_emu_pair_pt   = new vector<double>;
+  vertex_ee_Mll    = new vector<double>;
+  vertex_mumu_Mll  = new vector<double>;
+  vertex_emu_Mll   = new vector<double>;
 
   n_tracks_per_vtx= new vector<int>;
   track_pt        = new vector<vector<double> >;
@@ -161,6 +167,12 @@ MyAnalyzer::MyAnalyzer(const edm::ParameterSet& iConfig)
   newtree->Branch("vertex_x",&vertex_x);
   newtree->Branch("vertex_y",&vertex_y);
   newtree->Branch("vertex_z",&vertex_z);
+  newtree->Branch("vertex_mumu_pair_pt",&vertex_mumu_pair_pt);
+  newtree->Branch("vertex_mumu_Mll",&vertex_mumu_Mll);
+  newtree->Branch("vertex_ee_pair_pt",&vertex_ee_pair_pt);
+  newtree->Branch("vertex_ee_Mll",&vertex_ee_Mll);
+  newtree->Branch("vertex_emu_pair_pt",&vertex_emu_pair_pt);
+  newtree->Branch("vertex_emu_Mll",&vertex_emu_Mll);
 
 
   newtree->Branch("n_tracks_per_vtx",&n_tracks_per_vtx,"n_tracks_per_vtx/i");
@@ -203,8 +215,8 @@ MyAnalyzer::MyAnalyzer(const edm::ParameterSet& iConfig)
 MyAnalyzer::~MyAnalyzer()
 {
  
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
+  // do anything here that needs to be done at desctruction time
+  // (e.g. close files, deallocate resources etc.)
   delete muon_id        ;
   delete muon_pt        ;
   delete muon_E         ;
@@ -242,6 +254,12 @@ MyAnalyzer::~MyAnalyzer()
   delete vertex_ee_cand2_idx   ;
   delete vertex_emu_candE_idx  ;
   delete vertex_emu_candMu_idx   ;
+  delete vertex_mumu_pair_pt ;
+  delete vertex_mumu_Mll ;
+  delete vertex_ee_pair_pt   ;
+  delete vertex_ee_Mll   ;
+  delete vertex_emu_pair_pt  ;
+  delete vertex_emu_Mll   ;
 
   delete n_tracks_per_vtx;
   delete track_pt        ;
@@ -292,21 +310,21 @@ MyAnalyzer::~MyAnalyzer()
 void
 MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-   using namespace edm;
+  using namespace edm;
 
-   ////////////////////////////////////////////////////////////////////////////////
-   //Fill basic event variables
-   ////////////////////////////////////////////////////////////////////////////////
-   //Event information
-   RunNo = iEvent.id().run();
-   iEvt  = iEvent.id().event();
-   LumiB = iEvent.luminosityBlock();
-   PileUpWeight=1.;
-   int nextra_tracks = -999;
-   int nextra_tracks_mumu = -999;
-   int nextra_tracks_ee = -999;
+  ////////////////////////////////////////////////////////////////////////////////
+  //Fill basic event variables
+  ////////////////////////////////////////////////////////////////////////////////
+  //Event information
+  RunNo = iEvent.id().run();
+  iEvt  = iEvent.id().event();
+  LumiB = iEvent.luminosityBlock();
+  PileUpWeight=1.;
+  int nextra_tracks = -999;
+  int nextra_tracks_mumu = -999;
+  int nextra_tracks_ee = -999;
 
-   ///////////	clear vectors
+  ///////////	clear vectors
   muon_id      ->clear();
   muon_pt      ->clear();
   muon_E       ->clear();
@@ -335,15 +353,21 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   vertex_y      ->clear();
   vertex_z      ->clear();
   vertex_idx    ->clear(); //so far unused
-  vertex_extra_ntracks_ee->clear();
+  vertex_extra_ntracks_ee  ->clear();
   vertex_extra_ntracks_mumu->clear();
-  vertex_extra_ntracks_emu->clear();
+  vertex_extra_ntracks_emu ->clear();
   vertex_mumu_cand1_idx ->clear();
   vertex_mumu_cand2_idx ->clear();
-  vertex_ee_cand1_idx ->clear();
-  vertex_ee_cand2_idx ->clear();
-  vertex_emu_candE_idx ->clear();
-  vertex_emu_candMu_idx->clear();
+  vertex_ee_cand1_idx   ->clear();
+  vertex_ee_cand2_idx   ->clear();
+  vertex_emu_candE_idx  ->clear();
+  vertex_emu_candMu_idx ->clear();
+  vertex_mumu_pair_pt ->clear();
+  vertex_mumu_Mll     ->clear();
+  vertex_ee_pair_pt   ->clear();
+  vertex_ee_Mll       ->clear();
+  vertex_emu_pair_pt  ->clear();
+  vertex_emu_Mll      ->clear();
 
   n_tracks_per_vtx->clear();
   track_pt      ->clear();
@@ -385,493 +409,531 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   trigger_decision ->clear();
 
  
-   ////////////////////////////////////////////////////////////////////////////////
-   //        Fill MET info
-   ////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
+  //        Fill MET info
+  ////////////////////////////////////////////////////////////////////////////////
 
-   Handle< edm::View<reco::PFMET> > metHandle;
-   iEvent.getByLabel("pfType1CorrectedMet",metHandle);
-   edm::View<reco::PFMET> mets = *metHandle;
+  Handle< edm::View<reco::PFMET> > metHandle;
+  iEvent.getByLabel("pfType1CorrectedMet",metHandle);
+  edm::View<reco::PFMET> mets = *metHandle;
 
-   //edm::View<reco::PFMET>::const_iterator iMet;
-   // no need to loop, there's only one met for event
-   //for (iMet = mets.begin(); iMet != mets.end(); ++iMet) {
+  //edm::View<reco::PFMET>::const_iterator iMet;
+  // no need to loop, there's only one met for event
+  //for (iMet = mets.begin(); iMet != mets.end(); ++iMet) {
 
-   reco::PFMET iMet = mets.front();
-   MET    = iMet.et();
-   MET_px = iMet.px();
-   MET_py = iMet.py();
-   MET_phi= iMet.phi();
-   SumET  = iMet.sumEt();
-   //}
+  reco::PFMET iMet = mets.front();
+  MET    = iMet.et();
+  MET_px = iMet.px();
+  MET_py = iMet.py();
+  MET_phi= iMet.phi();
+  SumET  = iMet.sumEt();
+  //}
 
-   ////////////////////////////////////////////////////////////////////////////////
-   //         Fill Trigger info
-   ////////////////////////////////////////////////////////////////////////////////
-   Handle<TriggerResults> hltResults;
-   iEvent.getByLabel(InputTag("TriggerResults","","HLT"),hltResults);
-   const TriggerNames & trigNames = iEvent.triggerNames(*hltResults);
+  ////////////////////////////////////////////////////////////////////////////////
+  //         Fill Trigger info
+  ////////////////////////////////////////////////////////////////////////////////
+  Handle<TriggerResults> hltResults;
+  iEvent.getByLabel(InputTag("TriggerResults","","HLT"),hltResults);
+  const TriggerNames & trigNames = iEvent.triggerNames(*hltResults);
 
-   for(unsigned int i=0; i<trigNames.size();i++){
-     (*trigger_ps).push_back(hltConfig_.prescaleValue(iEvent,iSetup,trigNames.triggerName(i)));
-     (*trigger_name).push_back(trigNames.triggerName(i));
-     (*trigger_decision).push_back(hltResults->accept(i));
-   }
+  for(unsigned int i=0; i<trigNames.size();i++){
+    (*trigger_ps).push_back(hltConfig_.prescaleValue(iEvent,iSetup,trigNames.triggerName(i)));
+    (*trigger_name).push_back(trigNames.triggerName(i));
+    (*trigger_decision).push_back(hltResults->accept(i));
+  }
 
-   if(isMC){
+  if(isMC){
 
-     ////////////////////////////////////////////////////////////////////////////////
-     // for MC fill Gen particle variables
-     ////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////
+    // for MC fill Gen particle variables
+    ////////////////////////////////////////////////////////////////////////////////
      
-     Handle<reco::GenParticleCollection> genP;
-     iEvent.getByLabel("genParticles",genP);
+    Handle<reco::GenParticleCollection> genP;
+    iEvent.getByLabel("genParticles",genP);
 
-     //Loop over gen particles with pt and eta cuts
-     reco::GenParticleCollection::const_iterator mcIter ;
-     int nphotons=0;
-     double pho1px,pho1py,pho1pz,pho1E;
-     double pho2px,pho2py,pho2pz,pho2E;
-     math::XYZTLorentzVector fourp_pho1,fourp_pho2;
-     for (mcIter=genP->begin(); mcIter != genP->end(); mcIter++ ) {
-       if (mcIter->pdgId()==22 && mcIter->status()==-1){ // status of incoming photons? was -1 in LHE file
-	 nphotons++;
-	 if (nphotons<2){
-	   pho1px = mcIter->px();
-	   pho1py = mcIter->py();
-	   pho1pz = mcIter->pz();
-	   pho1E = mcIter->energy();
-	   fourp_pho1.SetPxPyPzE(pho1px,pho1py,pho1pz,pho1E);
-	 }
-	 else if (nphotons ==2){
-	   pho2px = mcIter->px();
-	   pho2py = mcIter->py();
-	   pho2pz = mcIter->pz();
-	   pho2E = mcIter->energy();
-	   fourp_pho2.SetPxPyPzE(pho2px,pho2py,pho2pz,pho2E);
-	   sqrtsgamgam = (fourp_pho1+fourp_pho2).M();
-	   ///make  Center of Mass energy between 2 photons ?e1+e2? or inv mass?
-	 }
-	 else{
-	   cout<<"More than two photons!"<<endl;
-	 }
-       }// end incoming photons
+    //Loop over gen particles with pt and eta cuts
+    reco::GenParticleCollection::const_iterator mcIter ;
+    int nphotons=0;
+    double pho1px,pho1py,pho1pz,pho1E;
+    double pho2px,pho2py,pho2pz,pho2E;
+    math::XYZTLorentzVector fourp_pho1,fourp_pho2;
+    for (mcIter=genP->begin(); mcIter != genP->end(); mcIter++ ) {
+      if (mcIter->pdgId()==22 && mcIter->status()==-1){ // status of incoming photons? was -1 in LHE file
+	nphotons++;
+	if (nphotons<2){
+	  pho1px = mcIter->px();
+	  pho1py = mcIter->py();
+	  pho1pz = mcIter->pz();
+	  pho1E = mcIter->energy();
+	  fourp_pho1.SetPxPyPzE(pho1px,pho1py,pho1pz,pho1E);
+	}
+	else if (nphotons ==2){
+	  pho2px = mcIter->px();
+	  pho2py = mcIter->py();
+	  pho2pz = mcIter->pz();
+	  pho2E = mcIter->energy();
+	  fourp_pho2.SetPxPyPzE(pho2px,pho2py,pho2pz,pho2E);
+	  sqrtsgamgam = (fourp_pho1+fourp_pho2).M();
+	  ///make  Center of Mass energy between 2 photons ?e1+e2? or inv mass?
+	}
+	else{
+	  cout<<"More than two photons!"<<endl;
+	}
+      }// end incoming photons
 
-       if (mcIter->pt()>20 && fabs(mcIter->eta())<2.5){ 
-	 (*genpart_pt).push_back(mcIter->pt());
-	 (*genpart_px).push_back(mcIter->px());
-	 (*genpart_py).push_back(mcIter->py());
-	 (*genpart_pz).push_back(mcIter->pz());
-	 (*genpart_et).push_back(mcIter->et());
-	 (*genpart_E).push_back(mcIter->energy());
-	 (*genpart_Q).push_back(mcIter->charge());
-	 (*genpart_eta).push_back(mcIter->eta());
-	 (*genpart_phi).push_back(mcIter->phi());
-	 (*genpart_pdgID).push_back(mcIter->pdgId()); 
-	 (*genpart_status).push_back(mcIter->status());
-       }	   
-     }//end of looking at gen particles
-   }//end of specifying that it needs to be MC
+      if (mcIter->pt()>20 && fabs(mcIter->eta())<2.5){ 
+	(*genpart_pt).push_back(mcIter->pt());
+	(*genpart_px).push_back(mcIter->px());
+	(*genpart_py).push_back(mcIter->py());
+	(*genpart_pz).push_back(mcIter->pz());
+	(*genpart_et).push_back(mcIter->et());
+	(*genpart_E).push_back(mcIter->energy());
+	(*genpart_Q).push_back(mcIter->charge());
+	(*genpart_eta).push_back(mcIter->eta());
+	(*genpart_phi).push_back(mcIter->phi());
+	(*genpart_pdgID).push_back(mcIter->pdgId()); 
+	(*genpart_status).push_back(mcIter->status());
+      }	   
+    }//end of looking at gen particles
+  }//end of specifying that it needs to be MC
 
 
    // beam spot
-   edm::Handle<reco::BeamSpot> beamspot_h;
-   //   iEvent.getByLabel(beamSpotInputTag_, beamspot_h);
-   iEvent.getByLabel("offlineBeamSpot", beamspot_h);
-   const reco::BeamSpot &beamSpot = *(beamspot_h.product());
+  edm::Handle<reco::BeamSpot> beamspot_h;
+  //   iEvent.getByLabel(beamSpotInputTag_, beamspot_h);
+  iEvent.getByLabel("offlineBeamSpot", beamspot_h);
+  const reco::BeamSpot &beamSpot = *(beamspot_h.product());
 
 
-   // vertices
-   edm::Handle<reco::VertexCollection> vtxs;
-   iEvent.getByLabel("offlinePrimaryVertices", vtxs);
-   const reco::VertexCollection* vertexs = vtxs.product();
-   reco::VertexCollection::const_iterator vertex_i;
+  // vertices
+  edm::Handle<reco::VertexCollection> vtxs;
+  iEvent.getByLabel("offlinePrimaryVertices", vtxs);
+  const reco::VertexCollection* vertexs = vtxs.product();
+  reco::VertexCollection::const_iterator vertex_i;
 
 
-   ////////////////////////////////////////////////////////////////////////////////
-   //Muon Selection and filling of ntuple
-   ////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
+  //Muon Selection and filling of ntuple
+  ////////////////////////////////////////////////////////////////////////////////
 
-   edm::Handle< edm::View<reco::Muon> > muonHandle;
-   iEvent.getByLabel("muons", muonHandle);
-   edm::View<reco::Muon> muons = *muonHandle;
-   edm::View<reco::Muon>::const_iterator iMuon;
+  edm::Handle< edm::View<reco::Muon> > muonHandle;
+  iEvent.getByLabel("muons", muonHandle);
+  edm::View<reco::Muon> muons = *muonHandle;
+  edm::View<reco::Muon>::const_iterator iMuon;
 
-   //loop over muons and store muons that pass id cuts, including pt>20 GeV and |eta|<2.4
-   int n_MuonsPassingCuts = 0;
-   vector<int> muonCharge;
-   vector<double> muonTrackPt;
-   vector<double> muonTrackEta;
-   vector<double> muonTrackPhi;
-   for (iMuon = muons.begin(); iMuon != muons.end(); ++iMuon) {
-     bool pass_globalMuon = false;
-     if(iMuon->isGlobalMuon())
-       pass_globalMuon=true;
+  //loop over muons and store muons that pass id cuts, including pt>20 GeV and |eta|<2.4
+  int n_MuonsPassingCuts = 0;
+  vector<int> muonCharge;
+  vector<double> muonTrackPt;
+  vector<double> muonTrackEta;
+  vector<double> muonTrackPhi;
+  for (iMuon = muons.begin(); iMuon != muons.end(); ++iMuon) {
+    bool pass_globalMuon = false;
+    if(iMuon->isGlobalMuon())
+      pass_globalMuon=true;
 
-     bool pass_pfMuon = false;
-     if(iMuon->isPFMuon())
-       pass_pfMuon=true;
+    bool pass_pfMuon = false;
+    if(iMuon->isPFMuon())
+      pass_pfMuon=true;
 
-     bool pass_chi2 = false;
-     bool pass_MuonChamberHits = false;
-     if(iMuon->globalTrack().isNonnull()){
-       if(iMuon->globalTrack()->normalizedChi2()< 10)
-	 pass_chi2=true;
-       if(iMuon->globalTrack()->hitPattern().numberOfValidMuonHits() > 0)
-	 pass_MuonChamberHits=true;
-     }
+    bool pass_chi2 = false;
+    bool pass_MuonChamberHits = false;
+    if(iMuon->globalTrack().isNonnull()){
+      if(iMuon->globalTrack()->normalizedChi2()< 10)
+	pass_chi2=true;
+      if(iMuon->globalTrack()->hitPattern().numberOfValidMuonHits() > 0)
+	pass_MuonChamberHits=true;
+    }
 
-     bool pass_MuonStations = false;
-     if(iMuon->numberOfMatchedStations() > 1)
-       pass_MuonStations=true;
+    bool pass_MuonStations = false;
+    if(iMuon->numberOfMatchedStations() > 1)
+      pass_MuonStations=true;
 
-     bool pass_NPxlHits = false;
-     bool pass_NtrackerLayers = false;     
-     if(iMuon->innerTrack().isNonnull()){
-       if(iMuon->innerTrack()->hitPattern().numberOfValidPixelHits() > 0)
-	 pass_NPxlHits = true;
-       if(iMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5)
-	 pass_NtrackerLayers = true;
-       //       if( fabs(iMuon->innerTrack()->dxy(beamSpot.position())) < 0.2){d0cut = true;}
-     }
+    bool pass_NPxlHits = false;
+    bool pass_NtrackerLayers = false;     
+    if(iMuon->innerTrack().isNonnull()){
+      if(iMuon->innerTrack()->hitPattern().numberOfValidPixelHits() > 0)
+	pass_NPxlHits = true;
+      if(iMuon->innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5)
+	pass_NtrackerLayers = true;
+      //       if( fabs(iMuon->innerTrack()->dxy(beamSpot.position())) < 0.2){d0cut = true;}
+    }
 
-     bool pass_d0cut = false;
-     bool pass_dzcut = false;
-     double d0vtx = 999.;
-     double dzvtx = 999.;
-     if(iMuon->muonBestTrack().isNonnull()){
-       if (vtxs->size() > 0) {
-	 reco::VertexRef vtx(vtxs, 0);    
-	 d0vtx = iMuon->muonBestTrack()->dxy(vtx->position());
-	 dzvtx = iMuon->muonBestTrack()->dz(vtx->position());
-       } 
-       else {
-	 d0vtx = iMuon->muonBestTrack()->dxy();
-	 dzvtx = iMuon->muonBestTrack()->dz();
-       }
-       if( fabs(d0vtx) < 0.2)
-	 pass_d0cut = true;
-       if( fabs(dzvtx) < 0.5)
-	 pass_dzcut = true;
-     }
+    bool pass_d0cut = false;
+    bool pass_dzcut = false;
+    double d0vtx = 999.;
+    double dzvtx = 999.;
+    if(iMuon->muonBestTrack().isNonnull()){
+      if (vtxs->size() > 0) {
+	reco::VertexRef vtx(vtxs, 0);    
+	d0vtx = iMuon->muonBestTrack()->dxy(vtx->position());
+	dzvtx = iMuon->muonBestTrack()->dz(vtx->position());
+      } 
+      else {
+	d0vtx = iMuon->muonBestTrack()->dxy();
+	dzvtx = iMuon->muonBestTrack()->dz();
+      }
+      if( fabs(d0vtx) < 0.2)
+	pass_d0cut = true;
+      if( fabs(dzvtx) < 0.5)
+	pass_dzcut = true;
+    }
 
      
-     if(iMuon->pt()>20&&fabs(iMuon->eta())<2.4){
-       bool pass_muonId =false;
-       if(pass_d0cut &&	  pass_dzcut &&	  pass_NtrackerLayers &&
-	  pass_NPxlHits &&  pass_MuonStations &&  pass_MuonChamberHits &&
-	  pass_chi2 &&  pass_pfMuon &&   pass_globalMuon)
-	 pass_muonId=true;
+    if(iMuon->pt()>20&&fabs(iMuon->eta())<2.4){
+      bool pass_muonId =false;
+      if(pass_d0cut &&	  pass_dzcut &&	  pass_NtrackerLayers &&
+	 pass_NPxlHits &&  pass_MuonStations &&  pass_MuonChamberHits &&
+	 pass_chi2 &&  pass_pfMuon &&   pass_globalMuon)
+	pass_muonId=true;
        
        
-       (*muon_id).push_back(pass_muonId);
-       (*muon_pt).push_back(iMuon->pt());
-       (*muon_px).push_back(iMuon->px());
-       (*muon_py).push_back(iMuon->py());
-       (*muon_pz).push_back(iMuon->pz());
-       (*muon_et).push_back(iMuon->et());
-       (*muon_E).push_back(iMuon->energy());
-       (*muon_Q).push_back(iMuon->charge());
-       (*muon_eta).push_back(iMuon->eta());
-       (*muon_phi).push_back(iMuon->phi());
-       if(iMuon->innerTrack().isNonnull()){
-	 muonTrackPt.push_back(iMuon->innerTrack()->pt());
-	 muonTrackEta.push_back(iMuon->innerTrack()->eta());
-	 muonTrackPhi.push_back(iMuon->innerTrack()->phi());
-       }
-       else{
-	 muonTrackPt.push_back(-999.);
-	 muonTrackEta.push_back(-999.);
-	 muonTrackPhi.push_back(-999.);	 
-	 cout<<"The Muon track didn't pass some cut"<<endl;
-	 cout<< "pass_d0cut " << pass_d0cut 
-	     << ", pass_dzcut " << pass_dzcut
-	     << ", pass_NtrackerLayers "<< pass_NtrackerLayers
-	     << ", pass_NPxlHits "<< pass_NPxlHits
-	     <<	", pass_MuonStations " << pass_MuonStations
-	     << ", pass_MuonChamberHits " << pass_MuonChamberHits
-	     << ", pass_chi2 "<< pass_chi2 
-	     << ", pass_pfMuon "<< pass_pfMuon
-	     << ", pass_globalMuon "<< pass_globalMuon
-	     << endl;
-       }
-       muonCharge.push_back(iMuon->charge());
-       n_MuonsPassingCuts++;
-     }//end eta and pt selection
+      (*muon_id).push_back(pass_muonId);
+      (*muon_pt).push_back(iMuon->pt());
+      (*muon_px).push_back(iMuon->px());
+      (*muon_py).push_back(iMuon->py());
+      (*muon_pz).push_back(iMuon->pz());
+      (*muon_et).push_back(iMuon->et());
+      (*muon_E).push_back(iMuon->energy());
+      (*muon_Q).push_back(iMuon->charge());
+      (*muon_eta).push_back(iMuon->eta());
+      (*muon_phi).push_back(iMuon->phi());
+      if(iMuon->innerTrack().isNonnull()){
+	muonTrackPt.push_back(iMuon->innerTrack()->pt());
+	muonTrackEta.push_back(iMuon->innerTrack()->eta());
+	muonTrackPhi.push_back(iMuon->innerTrack()->phi());
+      }
+      else{
+	muonTrackPt.push_back(-999.);
+	muonTrackEta.push_back(-999.);
+	muonTrackPhi.push_back(-999.);	 
+	cout<<"The Muon track wasn't found"<<endl;
+      }
+      muonCharge.push_back(iMuon->charge());
+      n_MuonsPassingCuts++;
+    }//end eta and pt selection
 
-   }// end muons
-   n_muons=n_MuonsPassingCuts;
+  }// end muons
+  n_muons=n_MuonsPassingCuts;
+  cout<<"Nmuons "<<  n_ muons << " " << muonTrackPt.size() << " " << muon_phi->size()<<endl;
 
-   ////////////////////////////////////////////////////////////////////////////////
-   //Electron Selection and filling of ntuple
-   ////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
+  //Electron Selection and filling of ntuple
+  ////////////////////////////////////////////////////////////////////////////////
 
-   // New 2012 electron ID variables
-   // conversions 
-   edm::Handle<reco::ConversionCollection> conversions_h; 
-   iEvent.getByLabel("allConversions", conversions_h); 
+  // New 2012 electron ID variables
+  // conversions 
+  edm::Handle<reco::ConversionCollection> conversions_h; 
+  iEvent.getByLabel("allConversions", conversions_h); 
 
-   // iso deposits 
-   std::vector< edm::Handle< edm::ValueMap<double> > >  isoVals(isoValInputTags.size()); 
-   for (size_t j = 0; j < isoValInputTags.size(); ++j) { 
-     iEvent.getByLabel(isoValInputTags[j], isoVals[j]); 
-   } 
+  // iso deposits 
+  std::vector< edm::Handle< edm::ValueMap<double> > >  isoVals(isoValInputTags.size()); 
+  for (size_t j = 0; j < isoValInputTags.size(); ++j) { 
+    iEvent.getByLabel(isoValInputTags[j], isoVals[j]); 
+  } 
 
-   // rho for isolation 
-   edm::Handle<double> rhoIso_h; 
-   iEvent.getByLabel("kt6PFJetsForIsolation","rho", rhoIso_h); 
-   double rhoIso = *(rhoIso_h.product()); 
+  // rho for isolation 
+  edm::Handle<double> rhoIso_h; 
+  iEvent.getByLabel("kt6PFJetsForIsolation","rho", rhoIso_h); 
+  double rhoIso = *(rhoIso_h.product()); 
 
-   // electrons
-   edm::Handle<reco::GsfElectronCollection> els_h;
-   iEvent.getByLabel("gsfElectrons", els_h);
+  // electrons
+  edm::Handle<reco::GsfElectronCollection> els_h;
+  iEvent.getByLabel("gsfElectrons", els_h);
    
-   double checkduplicates[4] = {0,0,0,0};
+  double checkduplicates[4] = {0,0,0,0};
 
 
-   unsigned int n = els_h->size();
-   int n_ElsPassingCuts = 0;
-   vector<int> electronCharge;
-   vector<double> electronTrackPt;
-   vector<double> electronTrackEta;
-   vector<double> electronTrackPhi;
+  unsigned int n = els_h->size();
+  int n_ElsPassingCuts = 0;
+  vector<int> electronCharge;
+  vector<double> electronTrackPt;
+  vector<double> electronTrackEta;
+  vector<double> electronTrackPhi;
 
-   for(unsigned int i = 0; i < n; ++i) {
+  for(unsigned int i = 0; i < n; ++i) {
 
-     // get reference to electron
-     reco::GsfElectronRef ele(els_h, i);
+    // get reference to electron
+    reco::GsfElectronRef ele(els_h, i);
 
-     float pt            = ele->pt();
-     float eta           = ele->superCluster()->eta();
-     //cout << "ele= " << long(&ele) << endl;
-     double iso_ch = (*(isoVals)[0])[ele];
-     double iso_em = (*(isoVals)[1])[ele];
-     double iso_nh = (*(isoVals)[2])[ele];
-     bool pass_mediumEid=false;
-     if(PassTriggerCuts(EgammaCutBasedEleId::TRIGGERTIGHT, ele ))       
-       pass_mediumEid = EgammaCutBasedEleId::PassWP(EgammaCutBasedEleId::MEDIUM, 
-						    ele, 
-						    conversions_h, 
-						    beamSpot, 
-						    vtxs, 
-						    iso_ch, 
-						    iso_em, 
-						    iso_nh, 
-						    rhoIso);
+    float pt            = ele->pt();
+    float eta           = ele->superCluster()->eta();
+    //cout << "ele= " << long(&ele) << endl;
+    double iso_ch = (*(isoVals)[0])[ele];
+    double iso_em = (*(isoVals)[1])[ele];
+    double iso_nh = (*(isoVals)[2])[ele];
+    bool pass_mediumEid=false;
+    if(PassTriggerCuts(EgammaCutBasedEleId::TRIGGERTIGHT, ele ))       
+      pass_mediumEid = EgammaCutBasedEleId::PassWP(EgammaCutBasedEleId::MEDIUM, 
+						   ele, 
+						   conversions_h, 
+						   beamSpot, 
+						   vtxs, 
+						   iso_ch, 
+						   iso_em, 
+						   iso_nh, 
+						   rhoIso);
  
 
-     //     if(passmediumEid&&pt>20&&fabs(eta)<2.4){
-     bool electronId = false;
-     if(pass_mediumEid)
-       electronId = true;
+    bool electronId = false;
+    if(pass_mediumEid)
+      electronId = true;
 
-     if(pt>20&&fabs(eta)<2.4){  
-       bool duplicate = false;
-       if(pt==checkduplicates[0] && 
-	  checkduplicates[1]==eta && 
-	  checkduplicates[2]== ele->phi()&&
-	  checkduplicates[3]==ele->charge()){
-	 cout<<"Duplicate Electron"<<endl;
-	 duplicate = true;
-       }
-       else{
-	 checkduplicates[0] = pt;
-	 checkduplicates[1] = eta;
-	 checkduplicates[2] = ele->phi(); 
-	 checkduplicates[3] = ele->charge();
-       }
-
-       
-       if(!duplicate){
+    if(pt>20&&fabs(eta)<2.4){  
+//       bool duplicate = false;
+//       if(pt==checkduplicates[0] && 
+// 	 checkduplicates[1]==eta && 
+// 	 checkduplicates[2]== ele->phi()&&
+// 	 checkduplicates[3]==ele->charge()){
+// 	cout<<"Duplicate Electron"<<endl;
+// 	duplicate = true;
+//       }
+//       else{
+// 	checkduplicates[0] = pt;
+// 	checkduplicates[1] = eta;
+// 	checkduplicates[2] = ele->phi(); 
+// 	checkduplicates[3] = ele->charge();
+//       }       
+//       if(!duplicate){
 	 
-	 (*electron_id).push_back(electronId);
-	 (*electron_pt).push_back(ele->pt());
-	 (*electron_px).push_back(ele->px());
-	 (*electron_py).push_back(ele->py());
-	 (*electron_pz).push_back(ele->pz());
-	 (*electron_et).push_back(ele->et());
-	 (*electron_E).push_back(ele->energy());
-	 (*electron_Q).push_back(ele->charge());
-	 (*electron_eta).push_back(ele->eta());
-	 (*electron_phi).push_back(ele->phi());
-	 n_ElsPassingCuts++;
-	 electronCharge.push_back(ele->charge());
-	 if(ele->closestCtfTrackRef().isNonnull()){
-	   electronTrackPt.push_back(ele->closestCtfTrackRef()->pt());
-	   electronTrackEta.push_back(ele->closestCtfTrackRef()->eta());
-	   electronTrackPhi.push_back(ele->closestCtfTrackRef()->phi());
-	 }
-	 else{
-	   electronTrackPt.push_back(-9999.);
-	   electronTrackEta.push_back(-9999.);
-	   electronTrackPhi.push_back(-9999.);
-       cout<<"The electron track didn't pass some 'closest ctf track ref'"<<endl;	
-	   }
+	(*electron_id).push_back(electronId);
+	(*electron_pt).push_back(ele->pt());
+	(*electron_px).push_back(ele->px());
+	(*electron_py).push_back(ele->py());
+	(*electron_pz).push_back(ele->pz());
+	(*electron_et).push_back(ele->et());
+	(*electron_E).push_back(ele->energy());
+	(*electron_Q).push_back(ele->charge());
+	(*electron_eta).push_back(ele->eta());
+	(*electron_phi).push_back(ele->phi());
+	n_ElsPassingCuts++;
+	electronCharge.push_back(ele->charge());
+	if(ele->closestCtfTrackRef().isNonnull()){
+	  electronTrackPt.push_back(ele->closestCtfTrackRef()->pt());
+	  electronTrackEta.push_back(ele->closestCtfTrackRef()->eta());
+	  electronTrackPhi.push_back(ele->closestCtfTrackRef()->phi());
+	}
+	else{
+	  electronTrackPt.push_back(-9999.);
+	  electronTrackEta.push_back(-9999.);
+	  electronTrackPhi.push_back(-9999.);
+	  cout<<"The electron track wasn't found!"<<endl;	
+	}
 
-       }//end of requiring not a duplicate (this is for FAST SIM)
-     }//end of pt and eta requirements
-   }// end of loop in electrons
-   n_electrons=n_ElsPassingCuts;
+//       }//end of requiring not a duplicate (this is for FAST SIM)
+    }//end of pt and eta requirements
+  }// end of loop in electrons
+  n_electrons=n_ElsPassingCuts;
+  cout<<"Nelectrons "<<  n_electrons << " " << electronTrackPt.size() << " " << electron_phi->size()<<endl;
 
-   /////////////////////////////////////////////////////////////////////////////////////////////////
-   //Store vertex information for events that pass e e criteria (if electrons come from same vertex)
-   /////////////////////////////////////////////////////////////////////////////////////////////////
-   int count_Nvertices_match_ee = 0;
-   int count_Nvertices_match_mumu = 0;
-   int count_Nvertices_match_emu = 0;
-   for(vertex_i = vertexs->begin(); vertex_i<vertexs->end(); vertex_i++){
-     double vertexNtracks = vertex_i->tracksSize();
-     double vertexPos_z = vertex_i->z();
-     if(fabs(vertexPos_z)<24 ){
-       if(vertexNtracks<=75){
-	 for(int l = 0;l<n_ElsPassingCuts;l++){
-	   for(int k = l+1;k<n_ElsPassingCuts;k++){
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  //Store vertex information for events that pass e e criteria (if electrons come from same vertex)
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  int count_Nvertices_match_ee = 0;
+  int count_Nvertices_match_mumu = 0;
+  int count_Nvertices_match_emu = 0;
+  math::PtEtaPhiELorentzVector fourp_lep1,fourp_lep2;		
+
+  for(vertex_i = vertexs->begin(); vertex_i<vertexs->end(); vertex_i++){
+    double vertexNtracks = vertex_i->tracksSize();
+    double vertexPos_z = vertex_i->z();
+    if(fabs(vertexPos_z)<24 ){
+      if(vertexNtracks<=75){
+	for(int l = 0;l<n_ElsPassingCuts;l++){
+	  for(int k = l+1;k<n_ElsPassingCuts;k++){
        
-	     if((electronCharge[l]*electronCharge[k])<0){  
-	       bool pass_electron_assoc = false;
-	       bool pass_electron2_assoc = false;
-	       for(reco::Vertex::trackRef_iterator vertex_Tracks = vertex_i->tracks_begin();vertex_Tracks<vertex_i->tracks_end(); vertex_Tracks++){
-		 if( fabs((*vertex_Tracks)->pt()-electronTrackPt[l])<0.001 && 
-		     fabs((*vertex_Tracks)->eta()-electronTrackEta[l])<0.001 && 
-		     fabs((*vertex_Tracks)->phi()-electronTrackPhi[l])<0.001){
-		   if (pass_electron_assoc)
-		     cout<<"this is weird, this electron already had a track associated to it"<<endl;
-		   pass_electron_assoc = true;
-		   continue; // go to next TRACK
-		   //// I do this just in case, I don't want to associate the same track to diff leptons
-		 }
+	    if((electronCharge[l]*electronCharge[k])<0){  
+	      bool pass_electron_assoc = false;
+	      bool pass_electron2_assoc = false;
+	      for(reco::Vertex::trackRef_iterator vertex_Tracks = vertex_i->tracks_begin();vertex_Tracks<vertex_i->tracks_end(); vertex_Tracks++){
+		if( fabs((*vertex_Tracks)->pt()-electronTrackPt[l])<0.001 && 
+		    fabs((*vertex_Tracks)->eta()-electronTrackEta[l])<0.001 && 
+		    fabs((*vertex_Tracks)->phi()-electronTrackPhi[l])<0.001){
+		  if (pass_electron_assoc)
+		    cout<<"this is weird, this electron already had a track associated to it"<<endl;
+		  pass_electron_assoc = true;
+		  continue; // go to next TRACK
+		  //// I do this just in case, I don't want to associate the same track to diff leptons
+		}
 		 
-		 if( fabs((*vertex_Tracks)->pt()-electronTrackPt[k])<0.001 && 
-		     fabs((*vertex_Tracks)->eta()-electronTrackEta[k])<0.001 && 
-		     fabs((*vertex_Tracks)->phi()-electronTrackPhi[k])<0.001){
-		   if (pass_electron2_assoc)
-		     cout<<"this is weird, the electron already had an associated track"<<endl;
-		   pass_electron2_assoc = true;
-		   continue; // go to next TRACK
+		if( fabs((*vertex_Tracks)->pt()-electronTrackPt[k])<0.001 && 
+		    fabs((*vertex_Tracks)->eta()-electronTrackEta[k])<0.001 && 
+		    fabs((*vertex_Tracks)->phi()-electronTrackPhi[k])<0.001){
+		  if (pass_electron2_assoc)
+		    cout<<"this is weird, the electron already had an associated track"<<endl;
+		  pass_electron2_assoc = true;
+		  continue; // go to next TRACK
 		   
-		 }
+		}
 
-	       }//Loop over tracks to see if the leptons are there
+	      }//Loop over tracks to see if the leptons are there
 	       
-	       if(pass_electron_assoc&&pass_electron2_assoc){
-		 count_Nvertices_match_ee++;		 
-		 nextra_tracks_ee = vertexNtracks-2;
-		 (*vertex_extra_ntracks_ee).push_back(nextra_tracks_ee);
-		 (*vertex_ee_cand1_idx).push_back(l);
-		 (*vertex_ee_cand2_idx).push_back(k);
-		 //		 cout<<"This event passes mu+ mu- criteria and should be vetoed"<<endl;
-	       }
-	       
-	     }//end of if statement for charge
-	   }//end loop electron 1
+	      if(pass_electron_assoc&&pass_electron2_assoc){
+		count_Nvertices_match_ee++;		 
+		nextra_tracks_ee = vertexNtracks-2;
+		(*vertex_extra_ntracks_ee).push_back(nextra_tracks_ee);
+		(*vertex_ee_cand1_idx).push_back(l);
+		(*vertex_ee_cand2_idx).push_back(k);
+		fourp_lep1.SetE(electron_E->at(l)); 
+		fourp_lep1.SetPt(electron_pt->at(l));
+		fourp_lep1.SetEta(electron_eta->at(l));
+		fourp_lep1.SetPhi(electron_phi->at(l));
+		cout<<"electron k= "<< k << " pt= " <<electron_pt->at(k) << " or track pt= " << electronTrackPt[k] <<endl;
+		fourp_lep2.SetE(electron_E->at(k)); 
+		fourp_lep2.SetPt(electron_pt->at(k));
+		fourp_lep2.SetEta(electron_eta->at(k));
+		fourp_lep2.SetPhi(electron_phi->at(k));
+		vertex_ee_Mll->push_back((fourp_lep1+fourp_lep2).M());
+		vertex_ee_pair_pt->push_back((fourp_lep1+fourp_lep2).Pt());
+	      }
+	    }//end of if statement for charge
+	  }//end loop electron 1
+	}//end loop electron 2
 
-
-	 }//end loop electron 2
-
- 	 for(int l = 0;l<n_MuonsPassingCuts;l++){
- 	   for(int k = l+1;k<n_MuonsPassingCuts;k++){
+	for(int l = 0;l<n_MuonsPassingCuts;l++){
+	  for(int k = l+1;k<n_MuonsPassingCuts;k++){
 	     
- 	     if((muonCharge[l]*muonCharge[k])<0){
-	       //	     if(vertex_ntracks<=17){	     if(vertex_ntracks<=75){
+	    if((muonCharge[l]*muonCharge[k])<0){
+	      //	     if(vertex_ntracks<=17){	     if(vertex_ntracks<=75){
 	       
- 	       bool pass_muon_assoc = false;
-	       bool pass_muon2_assoc = false;
- 	       for(reco::Vertex::trackRef_iterator vertex_Tracks = vertex_i->tracks_begin();vertex_Tracks<vertex_i->tracks_end(); vertex_Tracks++){
-		 if( fabs((*vertex_Tracks)->pt()-muonTrackPt[l])<0.001 && 
- 		     fabs((*vertex_Tracks)->eta()-muonTrackEta[l])<0.001 && 
- 		     fabs((*vertex_Tracks)->phi()-muonTrackPhi[l])<0.001){
- 		   pass_muon_assoc = true;
-		   /// can I do this? // muon_vtx_idx->push_back(??);
-		   continue; // go to next TRACK
-		   //// I do this just in case, I don't want to associate the same track to diff leptons
+	      bool pass_muon_assoc = false;
+	      bool pass_muon2_assoc = false;
+	      for(reco::Vertex::trackRef_iterator vertex_Tracks = vertex_i->tracks_begin();vertex_Tracks<vertex_i->tracks_end(); vertex_Tracks++){
+		if( fabs((*vertex_Tracks)->pt()-muonTrackPt[l])<0.001 && 
+		    fabs((*vertex_Tracks)->eta()-muonTrackEta[l])<0.001 && 
+		    fabs((*vertex_Tracks)->phi()-muonTrackPhi[l])<0.001){
+		  pass_muon_assoc = true;
+		  /// can I do this? // muon_vtx_idx->push_back(??);
+		  continue; // go to next TRACK
+		  //// I do this just in case, I don't want to associate the same track to diff leptons
 
- 		 }
+		}
 		 
- 		 if( fabs((*vertex_Tracks)->pt()-muonTrackPt[k])<0.001 && 
-		     fabs((*vertex_Tracks)->eta()-muonTrackEta[k])<0.001 && 
- 		     fabs((*vertex_Tracks)->phi()-muonTrackPhi[k])<0.001){
- 		   pass_muon2_assoc = true;
-		   continue; // go to next TRACK
- 		 }
- 	       }//Loop over tracks to see if the leptons are there
+		if( fabs((*vertex_Tracks)->pt()-muonTrackPt[k])<0.001 && 
+		    fabs((*vertex_Tracks)->eta()-muonTrackEta[k])<0.001 && 
+		    fabs((*vertex_Tracks)->phi()-muonTrackPhi[k])<0.001){
+		  pass_muon2_assoc = true;
+		  continue; // go to next TRACK
+		}
+	      }//Loop over tracks to see if the leptons are there
 	       
- 	       if(pass_muon_assoc && pass_muon2_assoc){
-		 count_Nvertices_match_mumu++;
- 		 //veto_event=true;		 
- 		 nextra_tracks_mumu = vertexNtracks-2;
- 		 (*vertex_extra_ntracks_mumu).push_back(nextra_tracks_mumu);
- 		 (*vertex_mumu_cand1_idx).push_back(l);
- 		 (*vertex_mumu_cand2_idx).push_back(k);
- 		 //		 cout<<"This event passes mu+ mu- criteria and should be vetoed"<<endl;
- 	       }
-	       
- 	     }//end of if statement for charge
- 	   }//end loop muon1
- 	 }//end loop muon2
+	      if(pass_muon_assoc && pass_muon2_assoc){
+		count_Nvertices_match_mumu++;
+		//veto_event=true;		 
+		nextra_tracks_mumu = vertexNtracks-2;
+		(*vertex_extra_ntracks_mumu).push_back(nextra_tracks_mumu);
+		(*vertex_mumu_cand1_idx).push_back(l);
+		(*vertex_mumu_cand2_idx).push_back(k);
+		//		 cout<<"This event passes mu+ mu- criteria and should be vetoed"<<endl;
+		fourp_lep1.SetE(muon_E->at(l)); 
+		fourp_lep1.SetPt(muon_pt->at(l));
+		fourp_lep1.SetEta(muon_eta->at(l));
+		fourp_lep1.SetPhi(muon_phi->at(l));
+		cout<<"muon k= "<< k << " pt= " <<muon_pt->at(k) << " or track pt= " << muonTrackPt[k] <<endl;
+		fourp_lep2.SetE(muon_E->at(k)); 
+		fourp_lep2.SetPt(muon_pt->at(k));
+		fourp_lep2.SetEta(muon_eta->at(k));
+		fourp_lep2.SetPhi(muon_phi->at(k));
+		vertex_mumu_Mll->push_back((fourp_lep1+fourp_lep2).M());
+		vertex_mumu_pair_pt->push_back((fourp_lep1+fourp_lep2).Pt());
+		
+	      }  
+	    }//end of if statement for charge
+	  }//end loop muon1
+	}//end loop muon2
 
 
- 	 for(int l = 0;l<n_MuonsPassingCuts;l++){
- 	   for(int k = 0;k<n_ElsPassingCuts;k++){
+	for(int l = 0;l<n_MuonsPassingCuts;l++){
+	  for(int k = 0;k<n_ElsPassingCuts;k++){
 	     
- 	     if((muonCharge[l]*electronCharge[k])<0){
-	       //	     if(vertex_ntracks<=17){	     if(vertex_ntracks<=75){
+	    if((muonCharge[l]*electronCharge[k])<0){
+	      //	     if(vertex_ntracks<=17){	     if(vertex_ntracks<=75){
 	       
- 	       bool pass_muon_assoc = false;
-	       bool pass_electron_assoc = false;
- 	       for(reco::Vertex::trackRef_iterator vertex_Tracks = vertex_i->tracks_begin();vertex_Tracks<vertex_i->tracks_end(); vertex_Tracks++){
-		 if( fabs((*vertex_Tracks)->pt()-muonTrackPt[l])<0.001 && 
- 		     fabs((*vertex_Tracks)->eta()-muonTrackEta[l])<0.001 && 
- 		     fabs((*vertex_Tracks)->phi()-muonTrackPhi[l])<0.001){
- 		   pass_muon_assoc = true;
-		   /// can I do this? // muon_vtx_idx->push_back(??);
-		   continue; // go to next TRACK
-		   //// I do this just in case, I don't want to associate the same track to diff leptons
+	      bool pass_muon_assoc = false;
+	      bool pass_electron_assoc = false;
+	      for(reco::Vertex::trackRef_iterator vertex_Tracks = vertex_i->tracks_begin();vertex_Tracks<vertex_i->tracks_end(); vertex_Tracks++){
+		if( fabs((*vertex_Tracks)->pt()-muonTrackPt[l])<0.001 && 
+		    fabs((*vertex_Tracks)->eta()-muonTrackEta[l])<0.001 && 
+		    fabs((*vertex_Tracks)->phi()-muonTrackPhi[l])<0.001){
+		  pass_muon_assoc = true;
+		  /// can I do this? // muon_vtx_idx->push_back(??);
+		  continue; // go to next TRACK
+		  //// I do this just in case, I don't want to associate the same track to diff leptons
 
- 		 }
+		}
 		 
- 		 if( fabs((*vertex_Tracks)->pt()-electronTrackPt[k])<0.001 && 
-		     fabs((*vertex_Tracks)->eta()-electronTrackEta[k])<0.001 && 
- 		     fabs((*vertex_Tracks)->phi()-electronTrackPhi[k])<0.001){
- 		   pass_electron_assoc = true;
-		   continue; // go to next TRACK
- 		 }
- 	       }//Loop over tracks to see if the leptons are there
+		if( fabs((*vertex_Tracks)->pt()-electronTrackPt[k])<0.001 && 
+		    fabs((*vertex_Tracks)->eta()-electronTrackEta[k])<0.001 && 
+		    fabs((*vertex_Tracks)->phi()-electronTrackPhi[k])<0.001){
+		  pass_electron_assoc = true;
+		  continue; // go to next TRACK
+		}
+	      }//Loop over tracks to see if the leptons are there
 	       
- 	       if(pass_muon_assoc && pass_electron_assoc){
-		 count_Nvertices_match_emu++;
- 		 //veto_event=true;		 
- 		 nextra_tracks = vertexNtracks-2;
- 		 (*vertex_extra_ntracks_emu).push_back(nextra_tracks);
- 		 (*vertex_emu_candMu_idx).push_back(l);
- 		 (*vertex_emu_candE_idx).push_back(k);
- 		 //		 cout<<"This event passes mu+ mu- criteria and should be vetoed"<<endl;
- 	       }
-	       
- 	     }//end of if statement for charge
- 	   }//end loop electron
-	 }//end loop muon
-       }//end of vertex Ntracks<75 requirementa
-     }//end vertex z
-   }// end of loop over vertices
+	      if(pass_muon_assoc && pass_electron_assoc){
+		count_Nvertices_match_emu++;
+		//veto_event=true;		 
+		nextra_tracks = vertexNtracks-2;
+		(*vertex_extra_ntracks_emu).push_back(nextra_tracks);
+		(*vertex_emu_candMu_idx).push_back(l);
+		(*vertex_emu_candE_idx).push_back(k);
+		//		 cout<<"This event passes mu+ mu- criteria and should be vetoed"<<endl;
+		fourp_lep1.SetE(muon_E->at(l)); 
+		fourp_lep1.SetPt(muon_pt->at(l));
+		fourp_lep1.SetEta(muon_eta->at(l));
+		fourp_lep1.SetPhi(muon_phi->at(l));
+		cout<<"electron k= "<< k << " pt= " <<electron_pt->at(k) << " or track pt= " << electronTrackPt[k] <<endl;
+		fourp_lep2.SetE(electron_E->at(k)); 
+		fourp_lep2.SetPt(electron_pt->at(k));
+		fourp_lep2.SetEta(electron_eta->at(k));
+		fourp_lep2.SetPhi(electron_phi->at(k));
+		vertex_emu_Mll->push_back((fourp_lep1+fourp_lep2).M());
+		vertex_emu_pair_pt->push_back((fourp_lep1+fourp_lep2).Pt());
 
-   if(count_Nvertices_match_ee>1){
-     cout<<"More than one matching ee pair vertex in the event iEvt: "<<iEvt<<endl;
-   }
-   if(count_Nvertices_match_mumu>1){
-     cout<<"More than one matching mumu pair vertex in the event iEvt: "<<iEvt<<endl;
-   }
-   if(count_Nvertices_match_ee+count_Nvertices_match_mumu>1){
-     cout<<"More than one matching same flavour ll pair vertex in the event iEvt: "<<iEvt<<endl;
-   }
-   if(count_Nvertices_match_emu>1){
-     cout<<"More than one matching emu pair vertex in the event iEvt: "<<iEvt<<endl;
-   }
-   if(count_Nvertices_match_emu+count_Nvertices_match_ee+count_Nvertices_match_mumu>1){
-     cout<<"More than one matching pair vertex of any kind in the event iEvt: "<<iEvt<<endl;
-   }
+	      }
+	       
+	    }//end of if statement for charge
+	  }//end loop electron
+	}//end loop muon
+      }//end of vertex Ntracks<75 requirementa
+    }//end vertex z
+  }// end of loop over vertices
+
+  if(count_Nvertices_match_ee>1){
+    cout<<"More than one matching ee pair vertex in the event iEvt: "<<iEvt<<endl;
+    cout<<"Size saved vertex "<<vertex_extra_ntracks_ee->size();
+    cout<<"Nextra tracks "<<vertex_extra_ntracks_ee->at(0);
+  }
+  if(count_Nvertices_match_mumu>1){
+    cout<<"More than one matching mumu pair vertex in the event iEvt: "<<iEvt<<endl;
+    cout<<"Size saved vertex "<<vertex_extra_ntracks_mumu->size();
+    cout<<"Nextra tracks "<<vertex_extra_ntracks_mumu->at(0);
+  }
+  if(count_Nvertices_match_ee+count_Nvertices_match_mumu>1){
+    cout<<"More than one matching same flavour ll pair vertex in the event iEvt: "<<iEvt<<endl;
+    cout<<"Size saved vertex ee"<<vertex_extra_ntracks_ee->size();
+    if (vertex_extra_ntracks_ee->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_ee->at(0);
+    cout<<"Size saved vertex mumu"<<vertex_extra_ntracks_mumu->size();
+    if (vertex_extra_ntracks_mumu->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_mumu->at(0);
+  }
+  if(count_Nvertices_match_emu>1){
+    cout<<"More than one matching emu pair vertex in the event iEvt: "<<iEvt<<endl;
+    cout<<"Size saved vertex "<<vertex_extra_ntracks_emu->size();
+    cout<<"Nextra tracks "<<vertex_extra_ntracks_emu->at(0);
+  }
+  if(count_Nvertices_match_emu+count_Nvertices_match_ee+count_Nvertices_match_mumu>1){
+    cout<<"More than one matching pair vertex of any kind in the event iEvt: "<<iEvt<<endl;
+    cout<<"Size saved vertex ee"<<vertex_extra_ntracks_ee->size();
+    if (vertex_extra_ntracks_ee->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_ee->at(0);
+    cout<<"Size saved vertex mumu"<<vertex_extra_ntracks_mumu->size();
+    if (vertex_extra_ntracks_mumu->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_mumu->at(0);
+    cout<<"Size saved vertex emu"<<vertex_extra_ntracks_emu->size();
+    if (vertex_extra_ntracks_emu->size() !=0) cout<<"Nextra tracks "<<vertex_extra_ntracks_emu->at(0);
+  }
 
           
-   newtree->Fill();
+  newtree->Fill();
 
 
 }//end analyze

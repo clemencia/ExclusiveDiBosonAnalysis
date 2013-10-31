@@ -1,5 +1,4 @@
 // -*- C++ -*-
-// -*- C++ -*-
 //
 // Package:    MyAnalyzer
 // Class:      MyAnalyzer
@@ -10,7 +9,7 @@
  Implementation: [Notes on implementation] 
                                                                              */
 //
-// Original Author:  Clemencia Mora Herrera,32 2-A13,+41227676740,
+// Original Author:  Clemencia Mora Herrera, clemencia.mora@cern.ch
 //         Created:  Wed May 29 22:56:42 CEST 2013
 // $Id$
 //
@@ -149,6 +148,12 @@ private:
   vector<int>*    vertex_ee_cand2_idx;
   vector<int>*    vertex_emu_candE_idx;
   vector<int>*    vertex_emu_candMu_idx;
+  vector<double>*    vertex_ee_pair_pt;
+  vector<double>*    vertex_mumu_pair_pt;
+  vector<double>*    vertex_emu_pair_pt;
+  vector<double>*    vertex_ee_Mll;
+  vector<double>*    vertex_mumu_Mll;
+  vector<double>*    vertex_emu_Mll;
 
 
   vector<int>* n_tracks_per_vtx;
