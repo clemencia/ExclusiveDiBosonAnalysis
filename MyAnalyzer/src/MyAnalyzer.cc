@@ -615,7 +615,7 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   }// end muons
   n_muons=n_MuonsPassingCuts;
-  cout<<"Nmuons "<<  n_ muons << " " << muonTrackPt.size() << " " << muon_phi->size()<<endl;
+  cout<<"Nmuons "<<  n_muons << " " << muonTrackPt.size() << " " << muon_phi->size()<<endl;
 
   ////////////////////////////////////////////////////////////////////////////////
   //Electron Selection and filling of ntuple
