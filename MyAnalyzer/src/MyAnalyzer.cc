@@ -458,7 +458,7 @@ MyAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     double pho2px,pho2py,pho2pz,pho2E;
     math::XYZTLorentzVector fourp_pho1,fourp_pho2;
     for (mcIter=genP->begin(); mcIter != genP->end(); mcIter++ ) {
-      if (mcIter->pdgId()==22 && mcIter->status()==-1){ // status of incoming photons? was -1 in LHE file
+      if (mcIter->pdgId()==22 && mcIter->status()==3){ // status of incoming photons? was -1 in LHE file is 3 in AODSIM
 	nphotons++;
 	if (nphotons<2){
 	  pho1px = mcIter->px();
